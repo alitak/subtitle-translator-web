@@ -1,11 +1,10 @@
 <script setup>
-import VideoList from '../components/VideoList.vue'
+import AddVideo from '../components/AddVideo.vue'
 </script>
 
 <template>
   <main>
-    <h1>My YouTube Videos</h1>
-    <VideoList />
+    <AddVideo />
   </main>
 </template>
 
@@ -14,9 +13,5 @@ main {
   max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
-}
-
-h1 {
-  margin-bottom: 20px;
 }
 </style>
