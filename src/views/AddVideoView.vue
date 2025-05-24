@@ -34,10 +34,8 @@ const validateYouTubeUrl = (url) => {
 }
 
 const submitForm = () => {
-  // Reset error message
   errorMessage.value = ''
 
-  // Validate URL
   if (!videoUrl.value) {
     errorMessage.value = 'Please enter a YouTube URL'
     return
@@ -48,25 +46,16 @@ const submitForm = () => {
     return
   }
 
-  // Validate languages
   if (selectedLanguages.value.length === 0) {
     errorMessage.value = 'Please select at least one language'
     return
   }
 
-  // Log the payload
-  console.log('Adding new video:', {
-    url: videoUrl.value,
-    languages: selectedLanguages.value,
-  })
-
-  // Add video to store
   axios.post(`${config.apiBaseUrl}/videos/`, {
     url: videoUrl.value,
     languages: selectedLanguages.value,
   })
 
-  // Navigate back to home after 500 ms
   setTimeout(() => {
     router.push('/')
   }, 500)
