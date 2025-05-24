@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import { store } from '../store'
+import axios from 'axios'
+import { config } from '@/config'
 
 const props = defineProps({
   video: {
@@ -11,59 +12,57 @@ const props = defineProps({
 
 const newLanguage = ref('')
 
-// Delete video
 const deleteVideo = () => {
-  console.log('Deleting video:', props.video.id)
-  store.deleteVideo(props.video.id)
+  if (!confirm('Are you sure you want to delete this video?')) {
+    return
+  }
+
+  axios.delete(`${config.apiBaseUrl}/videos/${props.video.id}`)
+  .then(() => {
+    location.reload()
+  })
 }
 
-// Add language
 const addLanguage = () => {
   if (newLanguage.value && !props.video.subtitles.includes(newLanguage.value)) {
-    console.log('Adding language:', newLanguage.value, 'to video:', props.video.id)
-    store.addTranslationLanguage(props.video.id, newLanguage.value)
-    newLanguage.value = ''
+    axios.post(`${config.apiBaseUrl}/videos/${props.video.id}/subtitles/${newLanguage.value}`)
+    .then(() => {
+      setTimeout(() => {
+        location.reload()
+      }, 500)
+    })
   }
-}
-
-// Download subtitle
-const downloadSubtitle = (language) => {
-  console.log('Downloading subtitle for video:', props.video.id, 'language:', language)
-  store.downloadSubtitle(props.video.id, language)
 }
 </script>
 
 <template>
   <div class="video-card">
-    <h3>{{ video.title }}</h3>
+    <h3>
+      {{ video.title }}
+      <!-- add confirm on delete button -->
+      <button class="delete-btn-inline" v-on:click="deleteVideo">Delete</button>
+    </h3>
     <p>
-      <strong>URL:</strong> <a :href="video.url" target="_blank">{{ video.url }}</a>
-    </p>
-    <p>
-      <strong>Status:</strong> <span :class="video.status.toLowerCase()">{{ video.status }}</span>
+      <strong>URL:</strong>
+      <a :href="video.url" target="_blank">{{ video.url }}</a>
+      <span :class="video.status.toLowerCase()" class="inline-status">({{ video.status }})</span>
     </p>
 
     <div class="subtitles">
-      <h4>Available Subtitles:</h4>
       <div class="language-list">
-        <div v-for="lang in video.subtitles" :key="lang" class="language-badge">
-          {{ lang }}
-          <button class="download-btn" @click="downloadSubtitle(lang)">Download</button>
+        <div v-for="subtitle in video.subtitles" :key="subtitle.id" class="language-badge">
+          <!-- if status == pending, button should be disabled with title pending -->
+          <a v-if="subtitle.status === 'pending'" class="download-btn cursor-not-allowed" disabled>{{ subtitle.language }} (pending)</a>
+          <a v-else :href="subtitle.path" target="_blank" class="download-btn">{{ subtitle.language }}</a>
         </div>
       </div>
     </div>
 
     <div class="actions">
       <div class="add-language">
-        <input
-          v-model="newLanguage"
-          type="text"
-          placeholder="Language code (e.g. fr, de)"
-          maxlength="5"
-        />
-        <button @click="addLanguage">Add Language</button>
+        <input v-model="newLanguage" type="text" placeholder="Language code (e.g. fr, de)" maxlength="5" />
+        <button v-on:click="addLanguage">Add Language</button>
       </div>
-      <button class="delete-btn" @click="deleteVideo">Delete Video</button>
     </div>
   </div>
 </template>
@@ -153,5 +152,27 @@ button {
 
 .delete-btn {
   background-color: #e74c3c;
+}
+
+.delete-btn-inline {
+  margin-left: 10px;
+  padding: 3px 8px;
+  font-size: 0.8em;
+  background-color: #e74c3c;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+}
+
+.inline-status {
+  margin-left: 10px;
+  font-size: 0.85em;
+  font-style: italic;
+  color: #555;
+}
+
+.cursor-not-allowed {
+  cursor: not-allowed;
 }
 </style>

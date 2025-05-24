@@ -1,18 +1,29 @@
 <script setup>
-import { ref, computed } from 'vue'
-import VideoCard from '../components/VideoCard.vue'
-import { store } from '../store'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import VideoCard from '@/components/VideoCard.vue'
+import { config } from '@/config'
 
 const searchQuery = ref('')
+const loading = ref(true)
+const videos = ref([])
 
-// Filter videos based on search query
+onMounted(async () => {
+  try {
+    const response = await axios.get(`${config.apiBaseUrl}/videos/`)
+    videos.value = response.data.items
+  } finally {
+    loading.value = false
+  }
+})
+
 const filteredVideos = computed(() => {
   if (!searchQuery.value) {
-    return store.videos
+    return videos.value
   }
 
   const query = searchQuery.value.toLowerCase()
-  return store.videos.filter(
+  return videos.value.filter(
     (video) => video.title.toLowerCase().includes(query) || video.url.toLowerCase().includes(query),
   )
 })
@@ -23,15 +34,14 @@ const filteredVideos = computed(() => {
     <div class="video-list">
       <h2>My Videos</h2>
       <div class="search-container">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search by title or URL..."
-          class="search-input"
-        />
+        <input v-model="searchQuery" type="text" placeholder="Search by title or URL..." class="search-input" />
       </div>
 
-      <div v-if="filteredVideos.length > 0" class="videos-container">
+      <div v-if="loading" class="loading-spinner">
+        <p>Loading videos...</p>
+      </div>
+
+      <div v-else-if="filteredVideos.length > 0" class="videos-container">
         <VideoCard v-for="video in filteredVideos" :key="video.id" :video="video" />
       </div>
 
@@ -76,5 +86,12 @@ main {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 40px 0;
+  font-size: 18px;
+  color: #666;
 }
 </style>

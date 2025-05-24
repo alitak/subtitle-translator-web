@@ -1,7 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { store } from '../store'
+import axios from 'axios'
+import { config } from '@/config'
 
 const router = useRouter()
 
@@ -60,7 +61,10 @@ const submitForm = () => {
   })
 
   // Add video to store
-  const success = store.addVideo(videoUrl.value, selectedLanguages.value)
+  const success = axios.post(`${config.apiBaseUrl}/videos/`, {
+    url: videoUrl.value,
+    languages: selectedLanguages.value,
+  })
 
   if (success) {
     // Navigate back to home
@@ -76,25 +80,14 @@ const submitForm = () => {
 
       <div class="form-group">
         <label for="video-url">YouTube Video URL:</label>
-        <input
-          id="video-url"
-          v-model="videoUrl"
-          type="text"
-          placeholder="https://www.youtube.com/watch?v=..."
-          required
-        />
+        <input id="video-url" v-model="videoUrl" type="text" placeholder="https://www.youtube.com/watch?v=..." required />
       </div>
 
       <div class="form-group">
         <label>Select Subtitle Languages:</label>
         <div class="language-options">
-          <div
-            v-for="language in availableLanguages"
-            :key="language.code"
-            class="language-option"
-            :class="{ selected: selectedLanguages.includes(language.code) }"
-            @click="toggleLanguage(language.code)"
-          >
+          <div v-for="language in availableLanguages" :key="language.code" class="language-option"
+            :class="{ selected: selectedLanguages.includes(language.code) }" v-on:click="toggleLanguage(language.code)">
             <span class="language-code">{{ language.code }}</span>
             <span class="language-name">{{ language.name }}</span>
           </div>
@@ -106,7 +99,7 @@ const submitForm = () => {
       </div>
 
       <div class="form-actions">
-        <button class="submit-btn" @click="submitForm">Add Video</button>
+        <button class="submit-btn" v-on:click="submitForm">Add Video</button>
       </div>
     </div>
   </main>
