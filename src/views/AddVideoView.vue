@@ -61,15 +61,15 @@ const submitForm = () => {
   })
 
   // Add video to store
-  const success = axios.post(`${config.apiBaseUrl}/videos/`, {
+  axios.post(`${config.apiBaseUrl}/videos/`, {
     url: videoUrl.value,
     languages: selectedLanguages.value,
   })
 
-  if (success) {
-    // Navigate back to home
+  // Navigate back to home after 500 ms
+  setTimeout(() => {
     router.push('/')
-  }
+  }, 500)
 }
 </script>
 
